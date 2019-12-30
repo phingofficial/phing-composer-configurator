@@ -1,0 +1,49 @@
+{
+    "name": "phing/phing-composer-configurator",
+    "description": "PHing Is Not GNU make; it's a PHP project build system or build tool based on Apache Ant.",
+    "keywords": ["build", "tool", "task", "phing", "php", "build-tool", "build-automation", "ant", "make"],
+    "homepage": "https://www.phing.info/",
+    "license": "LGPL-3.0-only",
+    "type": "composer-plugin",
+    "extra": {
+        "class": [
+            "Phing\\PhingComposerConfigurator\\ExtensionInstallerPlugin"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Siad Ardroumli",
+            "email": "siad.ardroumli@gmail.com"
+        },
+        {
+            "name": "Phing Community",
+            "homepage": "https://github.com/phingofficial/phing/blob/master/CREDITS.md"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/phingofficial/phing/issues",
+        "source": "https://github.com/phingofficial/phing/",
+        "irc": "irc://irc.freenode.net/phing",
+        "slack": "https://www.phing.info/slack",
+        "docs": "https://www.phing.info/docs/guide/stable/"
+    },
+    "config": {
+        "preferred-install": "dist",
+        "sort-packages": true
+    },
+    "require": {
+        "php": ">= 7.1",
+        "composer-plugin-api": "^1.0"
+    },
+    "require-dev": {
+        "roave/security-advisories": "dev-master",
+        "phpunit/phpunit": "^8.0",
+        "composer/composer": "^1.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "Phing\\PhingComposerConfigurator\\": "src"
+        }
+    },
+    "prefer-stable": true
+}
