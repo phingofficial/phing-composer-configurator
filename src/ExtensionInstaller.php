@@ -48,7 +48,7 @@ class ExtensionInstaller extends LibraryInstaller
         foreach (self::CUSTOM_DEFS as $type => $file) {
             foreach ($extra[$type] ?? [] as $name => $class) {
                 $this->io->write("  - Installing custom phing ${file} <${name}>.");
-                file_put_contents("custom.${file}.properties", sprintf('%s=%s%s', $name, str_replace('\\', '\\\\', $class), PHP_EOL), FILE_APPEND);
+                file_put_contents("custom.${file}.properties", sprintf('%s=%s%s', $name, $class, PHP_EOL), FILE_APPEND);
             }
         }
     }
@@ -59,7 +59,7 @@ class ExtensionInstaller extends LibraryInstaller
             foreach ($extra[$type] ?? [] as $name => $class) {
                 $this->io->write("  - Removing custom phing ${file} <${name}>.");
                 $content = file_get_contents("custom.${file}.properties");
-                $content = str_replace(sprintf('%s=%s%s', $name, str_replace('\\', '\\\\', $class), PHP_EOL), '', $content);
+                $content = str_replace(sprintf('%s=%s%s', $name, $class, PHP_EOL), '', $content);
                 file_put_contents("custom.${file}.properties", $content);
             }
         }
