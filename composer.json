@@ -21,8 +21,8 @@
         }
     ],
     "support": {
-        "issues": "https://github.com/phingofficial/phing/issues",
-        "source": "https://github.com/phingofficial/phing/",
+        "issues": "https://github.com/phingofficial/phing-composer-configurator/issues",
+        "source": "https://github.com/phingofficial/phing-composer-configurator/",
         "irc": "irc://irc.freenode.net/phing",
         "slack": "https://www.phing.info/slack",
         "docs": "https://www.phing.info/docs/guide/stable/"
@@ -33,12 +33,12 @@
     },
     "require": {
         "php": ">= 7.1",
-        "composer-plugin-api": "^1.0"
+        "composer-plugin-api": "^1.1"
     },
     "require-dev": {
         "roave/security-advisories": "dev-master",
-        "phpunit/phpunit": "^8.0",
-        "composer/composer": "^1.9"
+        "phpunit/phpunit": "^7.5.18 || ^8.5.0",
+        "composer/composer": "^1.9.1"
     },
     "autoload": {
         "psr-4": {
