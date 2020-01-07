@@ -1,0 +1,24 @@
+parameters:
+  level: max
+  paths:
+    - src
+    - tests
+  autoload_files:
+    - %currentWorkingDirectory%/vendor/autoload.php
+  checkMissingIterableValueType: false
+  exceptionRules:
+    reportUnusedCatchesOfUncheckedExceptions: false
+    uncheckedExceptions: []
+  ergebnis:
+    classesAllowedToBeExtended:
+      - Composer\Installer\LibraryInstaller
+  ignoreErrors:
+    - '~Dynamic call to static method~'
+
+includes:
+  - vendor/phpstan/phpstan-strict-rules/rules.neon
+  - vendor/phpstan/phpstan-phpunit/extension.neon
+  - vendor/phpstan/phpstan-phpunit/rules.neon
+  - vendor/pepakriz/phpstan-exception-rules/extension.neon
+  - vendor/phpstan/phpstan-deprecation-rules/rules.neon
+  - vendor/ergebnis/phpstan-rules/rules.neon

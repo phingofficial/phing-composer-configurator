@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Phing\PhingComposerConfigurator;
 
 use Composer\Installer\LibraryInstaller;
@@ -7,12 +9,12 @@ use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 
 /**
- * Class TaskInstaller
+ * Class ExtensionInstaller
  * @package Phing\PhingConfigurator
  */
-class ExtensionInstaller extends LibraryInstaller
+final class ExtensionInstaller extends LibraryInstaller
 {
-    private const EXTENSTION_NAME = 'phing-extension';
+    public const EXTENSTION_NAME = 'phing-extension';
     private const CUSTOM_DEFS = [
         'phing-custom-taskdefs' => 'task',
         'phing-custom-typedefs' => 'type'
@@ -21,7 +23,7 @@ class ExtensionInstaller extends LibraryInstaller
     /**
      * @inheritDoc
      */
-    public function supports($packageType)
+    public function supports($packageType): bool
     {
         return self::EXTENSTION_NAME === $packageType;
     }
@@ -29,7 +31,7 @@ class ExtensionInstaller extends LibraryInstaller
     /**
      * @inheritDoc
      */
-    public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
+    public function install(InstalledRepositoryInterface $repo, PackageInterface $package): void
     {
         parent::install($repo, $package);
 
@@ -39,7 +41,7 @@ class ExtensionInstaller extends LibraryInstaller
     /**
      * {@inheritDoc}
      */
-    public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
+    public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target): void
     {
         $this->uninstallInternalComponents($initial->getExtra());
 
@@ -51,7 +53,7 @@ class ExtensionInstaller extends LibraryInstaller
     /**
      * @inheritDoc
      */
-    public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
+    public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package): void
     {
         $this->uninstallInternalComponents($package->getExtra());
 
@@ -67,9 +69,24 @@ class ExtensionInstaller extends LibraryInstaller
 
             $filename = sprintf('custom.%s.properties', $file);
 
+            $lines = file($filename);
+
+            if (false === $lines) {
+                $this->io->writeError(sprintf("  - Error while reading custom phing %s.", $file));
+
+                continue;
+            }
+
             foreach ($extra[$type] as $name => $class) {
-                $this->io->write("  - Installing custom phing ${file} <${name}>.");
-                file_put_contents($filename, sprintf('%s=%s%s', $name, $class, PHP_EOL), FILE_APPEND);
+                $line = sprintf('%s=%s%s', $name, $class, PHP_EOL);
+
+                if (in_array($line, $lines, true)) {
+                    // already added
+                    continue;
+                }
+
+                $this->io->write(sprintf("  - Installing new custom phing %s <%s>.", $file, $name));
+                file_put_contents($filename, $line, FILE_APPEND);
             }
         }
     }
@@ -83,10 +100,32 @@ class ExtensionInstaller extends LibraryInstaller
 
             $filename = sprintf('custom.%s.properties', $file);
 
+            $lines = file($filename);
+
+            if (false === $lines) {
+                $this->io->writeError(sprintf("  - Error while reading custom phing %s.", $file));
+
+                continue;
+            }
+
             foreach ($extra[$type] as $name => $class) {
-                $this->io->write("  - Removing custom phing ${file} <${name}>.");
+                $line = sprintf('%s=%s%s', $name, $class, PHP_EOL);
+
+                if (!in_array($line, $lines, true)) {
+                    // not found
+                    continue;
+                }
+
+                $this->io->write(sprintf("  - Removing custom phing %s <%s>.", $file, $name));
                 $content = file_get_contents($filename);
-                $content = str_replace(sprintf('%s=%s%s', $name, $class, PHP_EOL), '', $content);
+
+                if (false === $content) {
+                    $this->io->writeError(sprintf("  - Error while reading custom phing config %s.", $filename));
+
+                    continue;
+                }
+
+                $content = str_replace($line, '', $content);
                 file_put_contents($filename, $content);
             }
         }
