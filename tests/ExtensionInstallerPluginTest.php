@@ -37,6 +37,10 @@ final class ExtensionInstallerPluginTest extends TestCase
             ->willReturn($config);
 
         $io = $this->createMock(IOInterface::class);
+        $io->expects($this->never())
+            ->method('writeError');
+        $io->expects($this->never())
+            ->method('write');
 
         $object = new ExtensionInstallerPlugin();
 

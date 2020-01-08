@@ -6,10 +6,14 @@ namespace Phing\PhingComposerConfigurator;
 
 use Composer\Composer;
 use Composer\Config;
+use Composer\Downloader\DownloadManager;
+use Composer\Installer\BinaryInstaller;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
 use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
+use org\bovigo\vfs\vfsStream;
+use org\bovigo\vfs\vfsStreamFile;
 use PHPUnit\Framework\TestCase;
 
 final class ExtensionInstallerTest extends TestCase
@@ -60,6 +64,10 @@ final class ExtensionInstallerTest extends TestCase
             ->willReturn($config);
 
         $io = $this->createMock(IOInterface::class);
+        $io->expects($this->never())
+            ->method('writeError');
+        $io->expects($this->never())
+            ->method('write');
 
         /** @var \Composer\Composer $composer */
         /** @var \Composer\IO\IOInterface $io */
@@ -73,23 +81,50 @@ final class ExtensionInstallerTest extends TestCase
     }
 
     /**
-     * @throws \PHPUnit\Framework\ExpectationFailedException
-     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
      * @throws \PHPUnit\Framework\MockObject\RuntimeException
      */
-    public function testInstall(): void
+    public function testInstallNoExtraConfigured(): void
     {
+        $vendor     = 'vendor';
+        $prettyName = 'test/test-name';
+        $targetDir  = null;
+        $extra      = [];
+
         $config = $this->createMock(Config::class);
         $config->expects($this->exactly(3))
             ->method('get')
-            ->willReturn(null);
+            ->withConsecutive(['vendor-dir'], [], [])
+            ->willReturnOnConsecutiveCalls($vendor, '', '');
+
+        $package = $this->createMock(PackageInterface::class);
+        $package->expects($this->exactly(3))
+            ->method('getPrettyName')
+            ->willReturn($prettyName);
+        $package->expects($this->exactly(3))
+            ->method('getTargetDir')
+            ->willReturn($targetDir);
+        $package->expects($this->once())
+            ->method('getExtra')
+            ->willReturn($extra);
+
+        $getDownloadManager = $this->createMock(DownloadManager::class);
+        $getDownloadManager->expects($this->once())
+            ->method('download')
+            ->with($package, realpath($vendor) . '/' . $prettyName);
 
         $composer = $this->createMock(Composer::class);
         $composer->expects($this->exactly(3))
             ->method('getConfig')
             ->willReturn($config);
+        $composer->expects($this->once())
+            ->method('getDownloadManager')
+            ->willReturn($getDownloadManager);
 
         $io = $this->createMock(IOInterface::class);
+        $io->expects($this->never())
+            ->method('writeError');
+        $io->expects($this->never())
+            ->method('write');
 
         /** @var \Composer\Composer $composer */
         /** @var \Composer\IO\IOInterface $io */
@@ -99,14 +134,337 @@ final class ExtensionInstallerTest extends TestCase
         );
 
         $repo = $this->createMock(InstalledRepositoryInterface::class);
+        $repo->expects($this->exactly(2))
+            ->method('hasPackage')
+            ->with($package)
+            ->willReturn(false);
+
+        $object->install($repo, $package);
+    }
+
+    /**
+     * @throws \PHPUnit\Framework\MockObject\RuntimeException
+     */
+    public function testInstallATaskOnce(): void
+    {
+        $vendor     = 'vendor';
+        $prettyName = 'test/test-name';
+        $targetDir  = null;
+        $filename   = 'custom.task.properties';
+
+        $root = vfsStream::setup(
+            'root',
+            null,
+            [
+                (new vfsStreamFile($filename, 0777))->setContent(''),
+            ]
+        );
+
+        $root->url();
+        $uri        = $root->getChild($filename)->url(); //vfsStream::url('phing-custom-taskdefs.phingfile');
+        $extra      = ['phing-custom-taskdefs' => ['apigen' => 'Phing\Tasks\Ext\ApiGenTask']];
+
+        $config = $this->createMock(Config::class);
+        $config->expects($this->exactly(3))
+            ->method('get')
+            ->withConsecutive(['vendor-dir'], [], [])
+            ->willReturnOnConsecutiveCalls($vendor, '', '');
+
         $package = $this->createMock(PackageInterface::class);
+        $package->expects($this->exactly(3))
+            ->method('getPrettyName')
+            ->willReturn($prettyName);
+        $package->expects($this->exactly(3))
+            ->method('getTargetDir')
+            ->willReturn($targetDir);
+        $package->expects($this->once())
+            ->method('getExtra')
+            ->willReturn($extra);
 
-        try {
-            $object->install($repo, $package);
-        } catch (\RuntimeException $e) {
-            echo $e;exit;
-        }
+        $getDownloadManager = $this->createMock(DownloadManager::class);
+        $getDownloadManager->expects($this->once())
+            ->method('download')
+            ->with($package, realpath($vendor) . '/' . $prettyName);
 
-        $this->assertTrue(true);
+        $composer = $this->createMock(Composer::class);
+        $composer->expects($this->exactly(3))
+            ->method('getConfig')
+            ->willReturn($config);
+        $composer->expects($this->once())
+            ->method('getDownloadManager')
+            ->willReturn($getDownloadManager);
+
+        $io = $this->createMock(IOInterface::class);
+        $io->expects($this->never())
+            ->method('writeError');
+        $io->expects($this->once())
+            ->method('write')
+            ->with('  - Installing new custom phing vfs://root/custom.task.properties <apigen>.');
+
+        /** @var \Composer\Composer $composer */
+        /** @var \Composer\IO\IOInterface $io */
+        $object = new ExtensionInstaller(
+            $io,
+            $composer
+        );
+        $object->setTaskFile($uri);
+
+        $repo = $this->createMock(InstalledRepositoryInterface::class);
+        $repo->expects($this->exactly(2))
+            ->method('hasPackage')
+            ->with($package)
+            ->willReturn(false);
+
+        $object->install($repo, $package);
+    }
+
+    /**
+     * @throws \PHPUnit\Framework\MockObject\RuntimeException
+     */
+    public function testInstallATaskTwice(): void
+    {
+        $vendor     = 'vendor';
+        $prettyName = 'test/test-name';
+        $targetDir  = null;
+        $filename   = 'custom.task.properties';
+
+        $root = vfsStream::setup(
+            'root',
+            null,
+            [
+                (new vfsStreamFile($filename, 0777))->setContent(''),
+            ]
+        );
+
+        $root->url();
+        $uri        = $root->getChild($filename)->url(); //vfsStream::url('phing-custom-taskdefs.phingfile');
+        $extra      = ['phing-custom-taskdefs' => ['apigen' => 'Phing\Tasks\Ext\ApiGenTask']];
+
+        $config = $this->createMock(Config::class);
+        $config->expects($this->exactly(3))
+            ->method('get')
+            ->withConsecutive(['vendor-dir'], [], [])
+            ->willReturnOnConsecutiveCalls($vendor, '', '');
+
+        $package = $this->createMock(PackageInterface::class);
+        $package->expects($this->exactly(6))
+            ->method('getPrettyName')
+            ->willReturn($prettyName);
+        $package->expects($this->exactly(6))
+            ->method('getTargetDir')
+            ->willReturn($targetDir);
+        $package->expects($this->exactly(2))
+            ->method('getExtra')
+            ->willReturn($extra);
+
+        $getDownloadManager = $this->createMock(DownloadManager::class);
+        $getDownloadManager->expects($this->exactly(2))
+            ->method('download')
+            ->with($package, realpath($vendor) . '/' . $prettyName);
+
+        $composer = $this->createMock(Composer::class);
+        $composer->expects($this->exactly(3))
+            ->method('getConfig')
+            ->willReturn($config);
+        $composer->expects($this->once())
+            ->method('getDownloadManager')
+            ->willReturn($getDownloadManager);
+
+        $io = $this->createMock(IOInterface::class);
+        $io->expects($this->never())
+            ->method('writeError');
+        $io->expects($this->exactly(2))
+            ->method('write')
+            ->withConsecutive(['  - Installing new custom phing vfs://root/custom.task.properties <apigen>.'], ['  - <warning>custom phing vfs://root/custom.task.properties <apigen> was already installed.</warning>']);
+
+        /** @var \Composer\Composer $composer */
+        /** @var \Composer\IO\IOInterface $io */
+        $object = new ExtensionInstaller(
+            $io,
+            $composer
+        );
+        $object->setTaskFile($uri);
+
+        $repo = $this->createMock(InstalledRepositoryInterface::class);
+        $repo->expects($this->exactly(4))
+            ->method('hasPackage')
+            ->with($package)
+            ->willReturn(false);
+
+        $object->install($repo, $package);
+        $object->install($repo, $package);
+    }
+
+    /**
+     * @throws \PHPUnit\Framework\MockObject\RuntimeException
+     * @throws \InvalidArgumentException
+     */
+    public function testUpdateNoExtraConfigured(): void
+    {
+        $vendor     = 'vendor';
+        $prettyName = 'test/test-name';
+        $targetDir  = null;
+        $extra      = [];
+        $binaries   = [];
+
+        $config = $this->createMock(Config::class);
+        $config->expects($this->exactly(1))
+            ->method('get')
+            ->withConsecutive(['vendor-dir'], [], [])
+            ->willReturnOnConsecutiveCalls($vendor, '', '');
+
+        $initial = $this->createMock(PackageInterface::class);
+        $initial->expects($this->once())
+            ->method('getPrettyName')
+            ->willReturn($prettyName);
+        $initial->expects($this->once())
+            ->method('getTargetDir')
+            ->willReturn($targetDir);
+        $initial->expects($this->once())
+            ->method('getExtra')
+            ->willReturn($extra);
+        $initial->expects($this->never())
+            ->method('getBinaries')
+            ->willReturn($binaries);
+
+        $target = $this->createMock(PackageInterface::class);
+        $target->expects($this->exactly(2))
+            ->method('getPrettyName')
+            ->willReturn($prettyName);
+        $target->expects($this->exactly(2))
+            ->method('getTargetDir')
+            ->willReturn($targetDir);
+        $target->expects($this->once())
+            ->method('getExtra')
+            ->willReturn($extra);
+        $target->expects($this->never())
+            ->method('getBinaries')
+            ->willReturn($binaries);
+
+        $getDownloadManager = $this->createMock(DownloadManager::class);
+        $getDownloadManager->expects($this->never())
+            ->method('download')
+            ->with($initial, realpath($vendor) . '/' . $prettyName);
+
+        $composer = $this->createMock(Composer::class);
+        $composer->expects($this->once())
+            ->method('getConfig')
+            ->willReturn($config);
+        $composer->expects($this->once())
+            ->method('getDownloadManager')
+            ->willReturn($getDownloadManager);
+
+        $io = $this->createMock(IOInterface::class);
+        $io->expects($this->never())
+            ->method('writeError');
+        $io->expects($this->never())
+            ->method('write');
+
+        $filesystem = $this->createMock(Filesystem::class);
+        $filesystem->expects($this->exactly(4))
+            ->method('ensureDirectoryExists');
+
+        $binaryInstaller = $this->createMock(BinaryInstaller::class);
+        $binaryInstaller->expects($this->once())
+            ->method('removeBinaries')
+            ->with($initial);
+        $binaryInstaller->expects($this->once())
+            ->method('installBinaries')
+            ->with($target, realpath($vendor) . '/' . $prettyName);
+
+        /** @var \Composer\Composer $composer */
+        /** @var \Composer\IO\IOInterface $io */
+        $object = new ExtensionInstaller(
+            $io,
+            $composer,
+            'library',
+            $filesystem,
+            $binaryInstaller
+        );
+
+        $repo = $this->createMock(InstalledRepositoryInterface::class);
+        $repo->expects($this->exactly(2))
+            ->method('hasPackage')
+            ->with($initial)
+            ->willReturn(true);
+
+        $object->update($repo, $initial, $target);
+    }
+
+    /**
+     * @throws \PHPUnit\Framework\MockObject\RuntimeException
+     */
+    public function testUninstallNoExtraConfigured(): void
+    {
+        $vendor     = 'vendor';
+        $prettyName = 'test/test-name';
+        $targetDir  = null;
+        $extra      = [];
+
+        $config = $this->createMock(Config::class);
+        $config->expects($this->once())
+            ->method('get')
+            ->withConsecutive(['vendor-dir'], [], [])
+            ->willReturnOnConsecutiveCalls($vendor, '', '');
+
+        $package = $this->createMock(PackageInterface::class);
+        $package->expects($this->exactly(2))
+            ->method('getPrettyName')
+            ->willReturn($prettyName);
+        $package->expects($this->exactly(4))
+            ->method('getTargetDir')
+            ->willReturn($targetDir);
+        $package->expects($this->once())
+            ->method('getExtra')
+            ->willReturn($extra);
+
+        $getDownloadManager = $this->createMock(DownloadManager::class);
+        $getDownloadManager->expects($this->never())
+            ->method('download')
+            ->with($package, realpath($vendor) . '/' . $prettyName);
+
+        $composer = $this->createMock(Composer::class);
+        $composer->expects($this->once())
+            ->method('getConfig')
+            ->willReturn($config);
+        $composer->expects($this->once())
+            ->method('getDownloadManager')
+            ->willReturn($getDownloadManager);
+
+        $io = $this->createMock(IOInterface::class);
+        $io->expects($this->never())
+            ->method('writeError');
+        $io->expects($this->never())
+            ->method('write');
+
+        $filesystem = $this->createMock(Filesystem::class);
+        $filesystem->expects($this->exactly(2))
+            ->method('ensureDirectoryExists');
+
+        $binaryInstaller = $this->createMock(BinaryInstaller::class);
+        $binaryInstaller->expects($this->once())
+            ->method('removeBinaries')
+            ->with($package);
+        $binaryInstaller->expects($this->never())
+            ->method('installBinaries')
+            ->with($package, realpath($vendor) . '/' . $prettyName);
+
+        /** @var \Composer\Composer $composer */
+        /** @var \Composer\IO\IOInterface $io */
+        $object = new ExtensionInstaller(
+            $io,
+            $composer,
+            'library',
+            $filesystem,
+            $binaryInstaller
+        );
+
+        $repo = $this->createMock(InstalledRepositoryInterface::class);
+        $repo->expects($this->once())
+            ->method('hasPackage')
+            ->with($package)
+            ->willReturn(true);
+
+        $object->uninstall($repo, $package);
     }
 }

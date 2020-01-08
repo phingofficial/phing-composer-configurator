@@ -15,10 +15,37 @@ use Composer\Repository\InstalledRepositoryInterface;
 final class ExtensionInstaller extends LibraryInstaller
 {
     public const EXTENSTION_NAME = 'phing-extension';
-    private const CUSTOM_DEFS = [
-        'phing-custom-taskdefs' => 'task',
-        'phing-custom-typedefs' => 'type'
-    ];
+
+    private const TASK_FILE = 'custom.task.properties';
+    private const TYPE_FILE = 'custom.type.properties';
+    private const TASK_TYPE = 'phing-custom-taskdefs';
+    private const TYPE_TYPE = 'phing-custom-typedefs';
+
+    /**
+     * @var string
+     */
+    private $taskFile = self::TASK_FILE;
+
+    /**
+     * @var string
+     */
+    private $typeFile = self::TYPE_FILE;
+
+    /**
+     * @param string $taskFile
+     */
+    public function setTaskFile(string $taskFile): void
+    {
+        $this->taskFile = $taskFile;
+    }
+
+    /**
+     * @param string $typeFile
+     */
+    public function setTypeFile(string $typeFile): void
+    {
+        $this->typeFile = $typeFile;
+    }
 
     /**
      * @inheritDoc
@@ -30,6 +57,7 @@ final class ExtensionInstaller extends LibraryInstaller
 
     /**
      * @inheritDoc
+     * @throws \RuntimeException
      */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package): void
     {
@@ -62,43 +90,50 @@ final class ExtensionInstaller extends LibraryInstaller
 
     private function installInternalComponents(array $extra): void
     {
-        foreach (self::CUSTOM_DEFS as $type => $file) {
+        foreach ($this->getCustomDefs() as $type => $file) {
             if (!array_key_exists($type, $extra)) {
                 continue;
             }
 
-            $filename = sprintf('custom.%s.properties', $file);
+            $lines = file($file);
 
-            $lines = file($filename);
-
+            // @codeCoverageIgnoreStart
             if (false === $lines) {
                 $this->io->writeError(sprintf("  - Error while reading custom phing %s.", $file));
 
                 continue;
             }
+            // @codeCoverageIgnoreEnd
 
             foreach ($extra[$type] as $name => $class) {
                 $line = sprintf('%s=%s%s', $name, $class, PHP_EOL);
 
                 if (in_array($line, $lines, true)) {
+                    $this->io->write(sprintf("  - <warning>custom phing %s <%s> was already installed.</warning>", $file, $name));
                     // already added
                     continue;
                 }
 
                 $this->io->write(sprintf("  - Installing new custom phing %s <%s>.", $file, $name));
-                file_put_contents($filename, $line, FILE_APPEND);
+                file_put_contents($file, $line, FILE_APPEND);
             }
         }
     }
 
     private function uninstallInternalComponents(array $extra): void
     {
-        foreach (self::CUSTOM_DEFS as $type => $file) {
+        foreach ($this->getCustomDefs() as $type => $file) {
             if (!array_key_exists($type, $extra)) {
                 continue;
             }
 
-            $filename = sprintf('custom.%s.properties', $file);
+            $filename = realpath($file);
+
+            if (false === $filename) {
+                $this->io->writeError(sprintf("  - Could not find custom phing %s.", $file));
+
+                continue;
+            }
 
             $lines = file($filename);
 
@@ -129,5 +164,13 @@ final class ExtensionInstaller extends LibraryInstaller
                 file_put_contents($filename, $content);
             }
         }
+    }
+
+    private function getCustomDefs(): array
+    {
+        return [
+            self::TASK_TYPE => $this->taskFile,
+            self::TYPE_TYPE => $this->typeFile,
+        ];
     }
 }

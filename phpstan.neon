@@ -14,6 +14,8 @@ parameters:
       - Composer\Installer\LibraryInstaller
   ignoreErrors:
     - '~Dynamic call to static method~'
+    - '~PHPDoc tag @throws with type .* is not compatible with parent~'
+#    - '~PHPDoc tag @throws with type .* is not subtype of Throwable~'
 
 includes:
   - vendor/phpstan/phpstan-strict-rules/rules.neon
