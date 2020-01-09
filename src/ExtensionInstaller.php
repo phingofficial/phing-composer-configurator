@@ -139,11 +139,13 @@ final class ExtensionInstaller extends LibraryInstaller
 
             $content = file_get_contents($file);
 
+            // @codeCoverageIgnoreStart
             if (false === $content) {
                 $this->io->writeError(sprintf("  - Error while reading custom phing config %s.", $file));
 
                 continue;
             }
+            // @codeCoverageIgnoreEnd
 
             foreach ($extra[$type] as $name => $class) {
                 $line = sprintf('%s=%s%s', $name, $class, PHP_EOL);
