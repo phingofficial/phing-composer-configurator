@@ -127,18 +127,20 @@ final class ExtensionInstaller extends LibraryInstaller
                 continue;
             }
 
-            $filename = realpath($file);
+            $lines = file($file);
 
-            if (false === $filename) {
-                $this->io->writeError(sprintf("  - Could not find custom phing %s.", $file));
+            // @codeCoverageIgnoreStart
+            if (false === $lines) {
+                $this->io->writeError(sprintf("  - Error while reading custom phing %s.", $file));
 
                 continue;
             }
+            // @codeCoverageIgnoreEnd
 
-            $lines = file($filename);
+            $content = file_get_contents($file);
 
-            if (false === $lines) {
-                $this->io->writeError(sprintf("  - Error while reading custom phing %s.", $file));
+            if (false === $content) {
+                $this->io->writeError(sprintf("  - Error while reading custom phing config %s.", $file));
 
                 continue;
             }
@@ -147,22 +149,17 @@ final class ExtensionInstaller extends LibraryInstaller
                 $line = sprintf('%s=%s%s', $name, $class, PHP_EOL);
 
                 if (!in_array($line, $lines, true)) {
+                    $this->io->write(sprintf("  - <warning>custom phing %s <%s> is not installed.</warning>", $file, $name));
                     // not found
                     continue;
                 }
 
                 $this->io->write(sprintf("  - Removing custom phing %s <%s>.", $file, $name));
-                $content = file_get_contents($filename);
-
-                if (false === $content) {
-                    $this->io->writeError(sprintf("  - Error while reading custom phing config %s.", $filename));
-
-                    continue;
-                }
 
                 $content = str_replace($line, '', $content);
-                file_put_contents($filename, $content);
             }
+
+            file_put_contents($file, $content);
         }
     }
 
