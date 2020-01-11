@@ -67,9 +67,27 @@ final class ExtensionInstaller extends LibraryInstaller
                 continue;
             }
 
+            $lines = file($file);
+
+            // @codeCoverageIgnoreStart
+            if (false === $lines) {
+                $this->io->writeError(sprintf("  - Error while reading custom phing %s.", $file));
+
+                continue;
+            }
+            // @codeCoverageIgnoreEnd
+
             foreach ($extra[$type] as $name => $class) {
-                $this->io->write("  - Installing custom phing ${file} <${name}>.");
-                file_put_contents("custom.${file}.properties", sprintf('%s=%s%s', $name, $class, PHP_EOL), FILE_APPEND);
+                $line = sprintf('%s=%s%s', $name, $class, PHP_EOL);
+
+                if (in_array($line, $lines, true)) {
+                    $this->io->write(sprintf("  - <warning>custom phing %s <%s> was already installed.</warning>", $file, $name));
+                    // already added
+                    continue;
+                }
+
+                $this->io->write(sprintf("  - Installing new custom phing %s <%s>.", $file, $name));
+                file_put_contents($file, $line, FILE_APPEND);
             }
         }
     }
@@ -81,17 +99,41 @@ final class ExtensionInstaller extends LibraryInstaller
                 continue;
             }
 
-            foreach ($extra[$type] as $name => $class) {
-                $this->io->write("  - Removing custom phing ${file} <${name}>.");
-                $content = file_get_contents("custom.${file}.properties");
-                if (false === $content) {
-                    $this->io->writeError(sprintf("  - Error while reading custom phing config %s.", $file));
+            $lines = file($file);
 
+            // @codeCoverageIgnoreStart
+            if (false === $lines) {
+                $this->io->writeError(sprintf("  - Error while reading custom phing %s.", $file));
+
+                continue;
+            }
+            // @codeCoverageIgnoreEnd
+
+            $content = file_get_contents($file);
+
+            // @codeCoverageIgnoreStart
+            if (false === $content) {
+                $this->io->writeError(sprintf("  - Error while reading custom phing config %s.", $file));
+
+                continue;
+            }
+            // @codeCoverageIgnoreEnd
+
+            foreach ($extra[$type] as $name => $class) {
+                $line = sprintf('%s=%s%s', $name, $class, PHP_EOL);
+
+                if (!in_array($line, $lines, true)) {
+                    $this->io->write(sprintf("  - <warning>custom phing %s <%s> is not installed.</warning>", $file, $name));
+                    // not found
                     continue;
                 }
-                $content = str_replace(sprintf('%s=%s%s', $name, $class, PHP_EOL), '', $content);
-                file_put_contents("custom.${file}.properties", $content);
+
+                $this->io->write(sprintf("  - Removing custom phing %s <%s>.", $file, $name));
+
+                $content = str_replace($line, '', $content);
             }
+
+            file_put_contents($file, $content);
         }
     }
 }
