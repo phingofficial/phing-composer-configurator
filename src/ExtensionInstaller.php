@@ -63,6 +63,11 @@ final class ExtensionInstaller extends LibraryInstaller
             foreach ($extra[$type] ?? [] as $name => $class) {
                 $this->io->write("  - Removing custom phing ${file} <${name}>.");
                 $content = file_get_contents("custom.${file}.properties");
+                if (false === $content) {
+                    $this->io->writeError(sprintf("  - Error while reading custom phing config %s.", $file));
+
+                    continue;
+                }
                 $content = str_replace(sprintf('%s=%s%s', $name, $class, PHP_EOL), '', $content);
                 file_put_contents("custom.${file}.properties", $content);
             }
