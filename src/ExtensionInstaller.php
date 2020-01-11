@@ -39,18 +39,35 @@ final class ExtensionInstaller extends LibraryInstaller
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target): void
+    {
+        $this->uninstallInternalComponents($initial->getExtra());
+
+        parent::update($repo, $initial, $target);
+
+        $this->installInternalComponents($target->getExtra());
+    }
+
+    /**
      * @inheritDoc
      */
     public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package): void
     {
-        parent::uninstall($repo, $package);
         $this->uninstallInternalComponents($package->getExtra());
+
+        parent::uninstall($repo, $package);
     }
 
     private function installInternalComponents(array $extra): void
     {
         foreach (self::CUSTOM_DEFS as $type => $file) {
-            foreach ($extra[$type] ?? [] as $name => $class) {
+            if (!array_key_exists($type, $extra)) {
+                continue;
+            }
+
+            foreach ($extra[$type] as $name => $class) {
                 $this->io->write("  - Installing custom phing ${file} <${name}>.");
                 file_put_contents("custom.${file}.properties", sprintf('%s=%s%s', $name, $class, PHP_EOL), FILE_APPEND);
             }
@@ -60,7 +77,11 @@ final class ExtensionInstaller extends LibraryInstaller
     private function uninstallInternalComponents(array $extra): void
     {
         foreach (self::CUSTOM_DEFS as $type => $file) {
-            foreach ($extra[$type] ?? [] as $name => $class) {
+            if (!array_key_exists($type, $extra)) {
+                continue;
+            }
+
+            foreach ($extra[$type] as $name => $class) {
                 $this->io->write("  - Removing custom phing ${file} <${name}>.");
                 $content = file_get_contents("custom.${file}.properties");
                 if (false === $content) {
