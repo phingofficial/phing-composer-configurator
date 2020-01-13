@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Phing\PhingComposerConfigurator;
 
 use Composer\Composer;
@@ -7,15 +9,15 @@ use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
 
 /**
- * Class TaskInstallerPlugin
+ * Class ExtensionInstallerPlugin
  * @package Phing\PhingConfigurator
  */
-class ExtensionInstallerPlugin implements PluginInterface
+final class ExtensionInstallerPlugin implements PluginInterface
 {
     /**
      * @inheritDoc
      */
-    public function activate(Composer $composer, IOInterface $io)
+    public function activate(Composer $composer, IOInterface $io): void
     {
         $installer = new ExtensionInstaller($io, $composer);
         $composer->getInstallationManager()->addInstaller($installer);

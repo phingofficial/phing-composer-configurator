@@ -1,0 +1,15 @@
+# https://dependabot.com/docs/config-file/
+
+version: 1
+
+update_configs:
+  - directory: "/"
+    package_manager: "php:composer"
+    update_schedule: "live"
+    version_requirement_updates: "widen_ranges"
+    commit_message:
+      prefix: "Build"
+      include_scope: true
+    ignored_updates:
+      - match:
+          dependency_name: "phpunit/phpunit"
