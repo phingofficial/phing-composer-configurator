@@ -33,7 +33,6 @@
         "composer/composer": "^1.9.1",
         "ergebnis/composer-normalize": "^2.0.2",
         "ergebnis/phpstan-rules": "^0.14.2",
-        "infection/infection": "^0.13.6 || ^0.15.0",
         "mikey179/vfsstream": "^1.6.8",
         "pepakriz/phpstan-exception-rules": "^0.10.1",
         "phpstan/phpstan": "^0.12.4",

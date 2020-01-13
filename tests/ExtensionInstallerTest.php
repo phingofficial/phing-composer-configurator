@@ -14,42 +14,17 @@ use Composer\Repository\InstalledRepositoryInterface;
 use Composer\Util\Filesystem;
 use org\bovigo\vfs\vfsStream;
 use org\bovigo\vfs\vfsStreamFile;
+use PHPUnit\Framework\ExpectationFailedException;
+use PHPUnit\Framework\MockObject\RuntimeException;
 use PHPUnit\Framework\TestCase;
+use SebastianBergmann\RecursionContext\InvalidArgumentException;
 
 final class ExtensionInstallerTest extends TestCase
 {
-    /** @var ExtensionInstaller */
-    private $object;
-
-    /** @var \Composer\IO\IOInterface */
-    private $io;
-
-    /** @var \Composer\Composer */
-    private $composer;
-
-    /** @var \Composer\Util\Filesystem */
-    private $filesystem;
-
-    /*
-    protected function setUp(): void
-    {
-        $this->composer = $this->createMock(Composer::class);
-        $this->io = $this->createMock(IOInterface::class);
-        $this->filesystem = $this->createMock(Filesystem::class);
-
-        $this->object = new ExtensionInstaller(
-            $this->io,
-            $this->composer,
-            ExtensionInstaller::EXTENSTION_NAME,
-            $this->filesystem
-        );
-    }
-    /**/
-
     /**
-     * @throws \PHPUnit\Framework\ExpectationFailedException
-     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
-     * @throws \PHPUnit\Framework\MockObject\RuntimeException
+     * @throws ExpectationFailedException
+     * @throws InvalidArgumentException
+     * @throws RuntimeException
      */
     public function testSupports(): void
     {
@@ -81,7 +56,7 @@ final class ExtensionInstallerTest extends TestCase
     }
 
     /**
-     * @throws \PHPUnit\Framework\MockObject\RuntimeException
+     * @throws RuntimeException
      */
     public function testInstallNoExtraConfigured(): void
     {
@@ -143,9 +118,9 @@ final class ExtensionInstallerTest extends TestCase
     }
 
     /**
-     * @throws \PHPUnit\Framework\MockObject\RuntimeException
-     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
-     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws RuntimeException
+     * @throws InvalidArgumentException
+     * @throws ExpectationFailedException
      */
     public function testInstallATaskOnce(): void
     {
@@ -226,9 +201,9 @@ final class ExtensionInstallerTest extends TestCase
     }
 
     /**
-     * @throws \PHPUnit\Framework\MockObject\RuntimeException
-     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
-     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws RuntimeException
+     * @throws InvalidArgumentException
+     * @throws ExpectationFailedException
      */
     public function testInstallATaskTwice(): void
     {
@@ -310,7 +285,7 @@ final class ExtensionInstallerTest extends TestCase
     }
 
     /**
-     * @throws \PHPUnit\Framework\MockObject\RuntimeException
+     * @throws RuntimeException
      * @throws \InvalidArgumentException
      */
     public function testUpdateNoExtraConfigured(): void
@@ -406,8 +381,8 @@ final class ExtensionInstallerTest extends TestCase
     }
 
     /**
-     * @throws \PHPUnit\Framework\MockObject\RuntimeException
-     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws RuntimeException
+     * @throws ExpectationFailedException
      * @throws \InvalidArgumentException
      */
     public function testUpdateATaskOnce(): void
@@ -527,8 +502,8 @@ final class ExtensionInstallerTest extends TestCase
     }
 
     /**
-     * @throws \PHPUnit\Framework\MockObject\RuntimeException
-     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws RuntimeException
+     * @throws ExpectationFailedException
      * @throws \InvalidArgumentException
      */
     public function testUpdateATaskTwice(): void
@@ -651,7 +626,7 @@ final class ExtensionInstallerTest extends TestCase
     }
 
     /**
-     * @throws \PHPUnit\Framework\MockObject\RuntimeException
+     * @throws RuntimeException
      */
     public function testUninstallNoExtraConfigured(): void
     {
@@ -728,9 +703,9 @@ final class ExtensionInstallerTest extends TestCase
     }
 
     /**
-     * @throws \PHPUnit\Framework\MockObject\RuntimeException
-     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
-     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws RuntimeException
+     * @throws InvalidArgumentException
+     * @throws ExpectationFailedException
      */
     public function testUninstallATaskOnce(): void
     {
@@ -825,9 +800,9 @@ final class ExtensionInstallerTest extends TestCase
     }
 
     /**
-     * @throws \PHPUnit\Framework\MockObject\RuntimeException
-     * @throws \SebastianBergmann\RecursionContext\InvalidArgumentException
-     * @throws \PHPUnit\Framework\ExpectationFailedException
+     * @throws RuntimeException
+     * @throws InvalidArgumentException
+     * @throws ExpectationFailedException
      */
     public function testUninstallATaskTwice(): void
     {
