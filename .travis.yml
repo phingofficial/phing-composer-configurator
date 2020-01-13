@@ -70,6 +70,6 @@ jobs:
       script: vendor/bin/phpcs -snp --standard=./ruleset.xml src tests
 
     - stage: static code analysis
-      php: 7.2
+      php: 7.3
       env: COMPOSER_FLAGS=""
       script: vendor/bin/phpstan analyse -c phpstan.neon --memory-limit=768M --no-progress
