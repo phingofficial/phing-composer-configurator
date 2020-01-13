@@ -14,17 +14,45 @@ use Composer\Repository\InstalledRepositoryInterface;
  */
 final class ExtensionInstaller extends LibraryInstaller
 {
-    private const CUSTOM_DEFS = [
-        'phing-custom-taskdefs' => 'task',
-        'phing-custom-typedefs' => 'type'
-    ];
+    public const EXTENSTION_NAME = 'phing-extension';
+
+    private const TASK_FILE = 'custom.task.properties';
+    private const TYPE_FILE = 'custom.type.properties';
+    private const TASK_TYPE = 'phing-custom-taskdefs';
+    private const TYPE_TYPE = 'phing-custom-typedefs';
+
+    /**
+     * @var string
+     */
+    private $taskFile = self::TASK_FILE;
+
+    /**
+     * @var string
+     */
+    private $typeFile = self::TYPE_FILE;
+
+    /**
+     * @param string $taskFile
+     */
+    public function setTaskFile(string $taskFile): void
+    {
+        $this->taskFile = $taskFile;
+    }
+
+    /**
+     * @param string $typeFile
+     */
+    public function setTypeFile(string $typeFile): void
+    {
+        $this->typeFile = $typeFile;
+    }
 
     /**
      * @inheritDoc
      */
     public function supports($packageType): bool
     {
-        return 'phing-extension' === $packageType;
+        return self::EXTENSTION_NAME === $packageType;
     }
 
     /**
@@ -62,7 +90,7 @@ final class ExtensionInstaller extends LibraryInstaller
 
     private function installInternalComponents(array $extra): void
     {
-        foreach (self::CUSTOM_DEFS as $type => $file) {
+        foreach ($this->getCustomDefs() as $type => $file) {
             if (!array_key_exists($type, $extra)) {
                 continue;
             }
@@ -94,7 +122,7 @@ final class ExtensionInstaller extends LibraryInstaller
 
     private function uninstallInternalComponents(array $extra): void
     {
-        foreach (self::CUSTOM_DEFS as $type => $file) {
+        foreach ($this->getCustomDefs() as $type => $file) {
             if (!array_key_exists($type, $extra)) {
                 continue;
             }
@@ -135,5 +163,13 @@ final class ExtensionInstaller extends LibraryInstaller
 
             file_put_contents($file, $content);
         }
+    }
+
+    private function getCustomDefs(): array
+    {
+        return [
+            self::TASK_TYPE => $this->taskFile,
+            self::TYPE_TYPE => $this->typeFile,
+        ];
     }
 }
