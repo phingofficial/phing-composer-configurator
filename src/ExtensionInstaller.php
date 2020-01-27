@@ -95,6 +95,10 @@ final class ExtensionInstaller extends LibraryInstaller
                 continue;
             }
 
+            if (!file_exists($file)) {
+                touch($file);
+            }
+
             $lines = file($file);
 
             // @codeCoverageIgnoreStart
