@@ -56,7 +56,7 @@ final class ExtensionInstallerTest extends TestCase
     }
 
     /**
-     * @throws RuntimeException
+     * @throws \RuntimeException
      */
     public function testInstallNoExtraConfigured(): void
     {
@@ -118,7 +118,7 @@ final class ExtensionInstallerTest extends TestCase
     }
 
     /**
-     * @throws RuntimeException
+     * @throws \RuntimeException
      * @throws InvalidArgumentException
      * @throws ExpectationFailedException
      */
@@ -201,7 +201,7 @@ final class ExtensionInstallerTest extends TestCase
     }
 
     /**
-     * @throws RuntimeException
+     * @throws \RuntimeException
      * @throws InvalidArgumentException
      * @throws ExpectationFailedException
      */
