@@ -120,7 +120,6 @@ final class ExtensionInstallerTest extends TestCase
     /**
      * @throws \RuntimeException
      * @throws InvalidArgumentException
-     * @throws ExpectationFailedException
      */
     public function testInstallATaskOnce(): void
     {
@@ -203,7 +202,6 @@ final class ExtensionInstallerTest extends TestCase
     /**
      * @throws \RuntimeException
      * @throws InvalidArgumentException
-     * @throws ExpectationFailedException
      */
     public function testInstallATaskTwice(): void
     {
