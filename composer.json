@@ -30,7 +30,7 @@
         "composer-plugin-api": "^1.1"
     },
     "require-dev": {
-        "composer/composer": "^1.9.1",
+        "composer/composer": "^1.9.1 || ^2.0.0",
         "ergebnis/composer-normalize": "^2.0.2",
         "ergebnis/phpstan-rules": "^0.14.2 || ^0.15.0",
         "mikey179/vfsstream": "^1.6.8",
