@@ -61,9 +61,9 @@ final class ExtensionInstaller extends LibraryInstaller
      */
     public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        parent::install($repo, $package);
-
         $this->installInternalComponents($package->getExtra());
+
+        return parent::install($repo, $package);
     }
 
     /**
@@ -73,9 +73,9 @@ final class ExtensionInstaller extends LibraryInstaller
     {
         $this->uninstallInternalComponents($initial->getExtra());
 
-        parent::update($repo, $initial, $target);
-
         $this->installInternalComponents($target->getExtra());
+
+        return parent::update($repo, $initial, $target);
     }
 
     /**
@@ -85,7 +85,7 @@ final class ExtensionInstaller extends LibraryInstaller
     {
         $this->uninstallInternalComponents($package->getExtra());
 
-        parent::uninstall($repo, $package);
+        return parent::uninstall($repo, $package);
     }
 
     private function installInternalComponents(array $extra): void
