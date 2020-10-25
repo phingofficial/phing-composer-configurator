@@ -19,6 +19,11 @@ use PHPUnit\Framework\MockObject\RuntimeException;
 use PHPUnit\Framework\TestCase;
 use SebastianBergmann\RecursionContext\InvalidArgumentException;
 
+/**
+ * Class ExtensionInstallerTest
+ * @package Phing\PhingComposerConfigurator
+ * @covers \Phing\PhingComposerConfigurator\ExtensionInstaller
+ */
 final class ExtensionInstallerTest extends TestCase
 {
     /**
@@ -83,9 +88,6 @@ final class ExtensionInstallerTest extends TestCase
             ->willReturn($extra);
 
         $getDownloadManager = $this->createMock(DownloadManager::class);
-        $getDownloadManager->expects($this->once())
-            ->method('download')
-            ->with($package, realpath($vendor) . '/' . $prettyName);
 
         $composer = $this->createMock(Composer::class);
         $composer->expects($this->exactly(3))
@@ -159,9 +161,6 @@ final class ExtensionInstallerTest extends TestCase
             ->willReturn($extra);
 
         $getDownloadManager = $this->createMock(DownloadManager::class);
-        $getDownloadManager->expects($this->once())
-            ->method('download')
-            ->with($package, realpath($vendor) . '/' . $prettyName);
 
         $composer = $this->createMock(Composer::class);
         $composer->expects($this->exactly(3))
@@ -241,9 +240,6 @@ final class ExtensionInstallerTest extends TestCase
             ->willReturn($extra);
 
         $getDownloadManager = $this->createMock(DownloadManager::class);
-        $getDownloadManager->expects($this->exactly(2))
-            ->method('download')
-            ->with($package, realpath($vendor) . '/' . $prettyName);
 
         $composer = $this->createMock(Composer::class);
         $composer->expects($this->exactly(3))
@@ -329,9 +325,6 @@ final class ExtensionInstallerTest extends TestCase
             ->willReturn($binaries);
 
         $getDownloadManager = $this->createMock(DownloadManager::class);
-        $getDownloadManager->expects($this->never())
-            ->method('download')
-            ->with($initial, realpath($vendor) . '/' . $prettyName);
 
         $composer = $this->createMock(Composer::class);
         $composer->expects($this->once())
@@ -441,9 +434,6 @@ final class ExtensionInstallerTest extends TestCase
             ->willReturn($binaries);
 
         $getDownloadManager = $this->createMock(DownloadManager::class);
-        $getDownloadManager->expects($this->once())
-            ->method('download')
-            ->with('');
 
         $composer = $this->createMock(Composer::class);
         $composer->expects($this->once())
@@ -562,9 +552,6 @@ final class ExtensionInstallerTest extends TestCase
             ->willReturn($binaries);
 
         $getDownloadManager = $this->createMock(DownloadManager::class);
-        $getDownloadManager->expects($this->exactly(2))
-            ->method('download')
-            ->with('');
 
         $composer = $this->createMock(Composer::class);
         $composer->expects($this->once())
@@ -651,9 +638,6 @@ final class ExtensionInstallerTest extends TestCase
             ->willReturn($extra);
 
         $getDownloadManager = $this->createMock(DownloadManager::class);
-        $getDownloadManager->expects($this->never())
-            ->method('download')
-            ->with($package, realpath($vendor) . '/' . $prettyName);
 
         $composer = $this->createMock(Composer::class);
         $composer->expects($this->once())
@@ -742,9 +726,6 @@ final class ExtensionInstallerTest extends TestCase
             ->willReturn($extra);
 
         $getDownloadManager = $this->createMock(DownloadManager::class);
-        $getDownloadManager->expects($this->never())
-            ->method('download')
-            ->with($package, realpath($vendor) . '/' . $prettyName);
 
         $composer = $this->createMock(Composer::class);
         $composer->expects($this->once())
@@ -839,9 +820,6 @@ final class ExtensionInstallerTest extends TestCase
             ->willReturn($extra);
 
         $getDownloadManager = $this->createMock(DownloadManager::class);
-        $getDownloadManager->expects($this->never())
-            ->method('download')
-            ->with($package, realpath($vendor) . '/' . $prettyName);
 
         $composer = $this->createMock(Composer::class);
         $composer->expects($this->once())

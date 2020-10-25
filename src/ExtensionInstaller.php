@@ -59,33 +59,33 @@ final class ExtensionInstaller extends LibraryInstaller
      * @inheritDoc
      * @throws \RuntimeException
      */
-    public function install(InstalledRepositoryInterface $repo, PackageInterface $package): void
+    public function install(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
-        parent::install($repo, $package);
-
         $this->installInternalComponents($package->getExtra());
+
+        return parent::install($repo, $package);
     }
 
     /**
      * {@inheritDoc}
      */
-    public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target): void
+    public function update(InstalledRepositoryInterface $repo, PackageInterface $initial, PackageInterface $target)
     {
         $this->uninstallInternalComponents($initial->getExtra());
 
-        parent::update($repo, $initial, $target);
-
         $this->installInternalComponents($target->getExtra());
+
+        return parent::update($repo, $initial, $target);
     }
 
     /**
      * @inheritDoc
      */
-    public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package): void
+    public function uninstall(InstalledRepositoryInterface $repo, PackageInterface $package)
     {
         $this->uninstallInternalComponents($package->getExtra());
 
-        parent::uninstall($repo, $package);
+        return parent::uninstall($repo, $package);
     }
 
     private function installInternalComponents(array $extra): void

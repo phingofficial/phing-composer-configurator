@@ -11,6 +11,11 @@ use Composer\IO\IOInterface;
 use PHPUnit\Framework\Constraint\IsInstanceOf;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Class ExtensionInstallerPluginTest
+ * @package Phing\PhingComposerConfigurator
+ * @covers \Phing\PhingComposerConfigurator\ExtensionInstallerPlugin
+ */
 final class ExtensionInstallerPluginTest extends TestCase
 {
     /**
