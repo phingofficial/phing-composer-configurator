@@ -23,12 +23,12 @@ final class ExtensionInstallerPlugin implements PluginInterface
         $composer->getInstallationManager()->addInstaller($installer);
     }
 
-    public function deactivate(Composer $composer, IOInterface $io)
+    public function deactivate(Composer $composer, IOInterface $io): void
     {
         // TODO: Implement deactivate() method.
     }
 
-    public function uninstall(Composer $composer, IOInterface $io)
+    public function uninstall(Composer $composer, IOInterface $io): void
     {
         // TODO: Implement uninstall() method.
     }
