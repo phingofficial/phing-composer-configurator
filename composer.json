@@ -30,7 +30,7 @@
         "composer-plugin-api": "^1.1|^2.0"
     },
     "require-dev": {
-        "composer/composer": "^1.10.22|^2.0.13",
+        "composer/composer": "~2.1.9",
         "ergebnis/composer-normalize": "^2.0.2",
         "ergebnis/phpstan-rules": "^0.14.2|^0.15.0",
         "mikey179/vfsstream": "^1.6.8",
@@ -46,7 +46,10 @@
     },
     "config": {
         "preferred-install": "dist",
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "ergebnis/composer-normalize": true
+        }
     },
     "extra": {
         "class": [
